@@ -2,6 +2,7 @@ module App where
 
 import Effects exposing (Effects, Never)
 import Html exposing (..)
+import Utils exposing (linkCss)
 import Html.Attributes exposing (style, class, classList)
 import Html.Events exposing (onClick)
 import Http
@@ -11,7 +12,7 @@ import Debug
 
 -- MODEL
 
-baseUrl = "http://swapi.co/api/people"
+baseUrl = "http://swapi.co/api/people/"
 
 type alias Character =
   { name: String,
@@ -80,7 +81,9 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ ]
-    [ h2 [ ] [text "Star Wars App - Elm lang"]
+    [
+    linkCss "style.css",
+    h2 [ ] [text "Star Wars App - Elm lang"]
     , viewCharacters model.characters
     , button [classList [("hidden", (model.next == Nothing))],
         onClick address LoadMore]

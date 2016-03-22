@@ -1,0 +1,9 @@
+body{
+  background: #d1d1d1;
+  color: #008fd5;
+}
+
+.hidden{
+  display:none;
+  pointer-events: none;
+}
