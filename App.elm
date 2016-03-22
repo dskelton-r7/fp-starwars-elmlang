@@ -80,7 +80,7 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [ ]
+  div [ class "shell" ]
     [
     linkCss "style.css",
     h2 [ ] [text "Star Wars App - Elm lang"]
@@ -95,7 +95,7 @@ characterView: Character -> Html
 characterView character =
     li [ class "characterView" ]
       [div [] [
-          li [] [text character.name]
+          li [ class "cname"] [text character.name]
         , ul [] [
             li [] [text ("Name: " ++ character.name)]
           , li [] [text ("Mass (kg): " ++ character.mass)]
@@ -107,7 +107,7 @@ characterView character =
 
 viewCharacters: Characters -> Html
 viewCharacters characters =
-  ul [] (List.map characterView characters)
+  ul [ class "characters" ] (List.map characterView characters)
 
 
 -- EFFECTS

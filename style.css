@@ -1,6 +1,48 @@
+*{
+  margin:0;
+  padding:0;
+}
+
 body{
-  background: #d1d1d1;
-  color: #008fd5;
+  background: #d6d6d6;
+  color: #ed1c24;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 300;
+}
+
+li{
+  list-style-type: none;
+}
+
+h2{
+  text-align: center;
+  color: black;
+  font-size: 3rem;
+}
+
+.characters{
+  list-style-type: none;
+  padding:100px;
+}
+
+.characterView{
+  background-color: #d1d1d1;
+  font-size: 20px;
+  line-height: 2rem;
+  padding: 20px;
+  margin:20px 0px;
+}
+
+.cname{
+  color: black;
+  text-decoration: underline;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.shell{
+  margin:100px auto;
+  width: 70%;
 }
 
 .hidden{
