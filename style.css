@@ -5,9 +5,17 @@
 
 body{
   background: #d6d6d6;
-  color: #ed1c24;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 300;
+}
+
+header{
+  padding-top: 50px;
+  width: 100%;
+  display: inline-block;
+  background-color: #2529d8;
+  color:white;
+  overflow: hidden;
 }
 
 li{
@@ -16,7 +24,6 @@ li{
 
 h2{
   text-align: center;
-  color: black;
   font-size: 3rem;
 }
 
@@ -40,12 +47,22 @@ h2{
   font-weight: bold;
 }
 
-.shell{
-  margin:100px auto;
-  width: 70%;
-}
-
 .hidden{
   display:none;
   pointer-events: none;
+}
+
+.search{
+  margin-top:50px;
+  padding: 20px;
+  font-size: 20px;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  outline: none;
+  text-indent: 20px;
+  color: #fff;
+  width: 100%;
+  display: block;
+  font-weight: bold;
+  font-style: italic;
 }

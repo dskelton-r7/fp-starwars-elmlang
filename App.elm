@@ -1,7 +1,7 @@
 module App where
 
 import Effects exposing (Effects, Never)
-import String exposing (contains, isEmpty, toLower)
+import String exposing (startsWith, contains, isEmpty, toLower)
 import Html exposing (..)
 import Utils exposing (linkCss, onInput)
 import Html.Attributes exposing (..)
@@ -87,19 +87,22 @@ update action model =
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [ class "shell" ]
+  div [ ]
     [
     linkCss "style.css",
-    h2 [ ] [text "Star Wars App - Elm lang"]
-    , input
-        [ type' "text",
-          placeholder "Search Characters...",
-          value model.term,
-          name "characters",
-          autofocus True,
-          onInput address Search
-        ]
-        [ ]
+    header [] [
+      h2 [ ] [text "Star Wars App - Elm lang"]
+      , input
+          [ type' "text",
+            placeholder "Search Characters...",
+            value model.term,
+            name "characters",
+            autofocus True,
+            onInput address Search,
+            class "search"
+          ]
+          [ ]
+    ]
     , viewCharacters model.term model.characters
     , button [classList [("hidden", (model.next == Nothing))],
         onClick address LoadMore]
