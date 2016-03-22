@@ -11,6 +11,8 @@ import Debug
 
 -- MODEL
 
+baseUrl = "http://swapi.co/api/people"
+
 type alias Character =
   { name: String,
     height: String,
@@ -19,8 +21,12 @@ type alias Character =
   }
 
 
+type alias Characters = List Character
+type alias Next = String
+
 type alias Model =
-  { characters: List Character
+  { characters: Characters,
+    next: Next
   }
 
 
@@ -33,9 +39,9 @@ newCharacter name height mass gender =
   }
 
 
-init page =
-  ( Model [],
-    fetchCharacters page
+init =
+  ( Model [] baseUrl,
+    fetchCharacters Nothing
     )
 
 -- UPDATE
@@ -43,7 +49,12 @@ init page =
 type Action
   = NoOp
   | LoadMore
-  | ShowCharacters (Maybe(List(Character)))
+  | ShowCharacters (Maybe Model)
+
+
+-- TODO:
+-- Keep track of current page in the model.
+-- Update request to use the next page
 
 
 update action model =
@@ -52,17 +63,15 @@ update action model =
       (model, Effects.none)
 
     LoadMore ->
-      (model, fetchCharacters "2")
+      (model, fetchCharacters (Just model.next))
 
-    ShowCharacters maybeCharacters ->
-      let
-        characters =
-          List.append
-            model.characters
-            (Maybe.withDefault model.characters maybeCharacters)
-      in
-        (Model characters, Effects.none)
-
+    ShowCharacters modelDef ->
+      case modelDef of
+        Just m ->
+          ( Model (List.append model.characters m.characters) m.next
+          , Effects.none)
+        Nothing ->
+          (model, Effects.none)
 
 -- VIEW
 
@@ -94,16 +103,13 @@ viewCharacters characters =
 
 -- EFFECTS
 
-fetchCharacters page =
-  Http.get results (charactersUrl page)
+fetchCharacters requestURL =
+  Http.get results (Maybe.withDefault baseUrl requestURL)
     |> Task.toMaybe
     |> Task.map ShowCharacters
-    |> Debug.log "characters::"
     |> Effects.task
 
 
-charactersUrl page =
-  Http.url "http://swapi.co/api/people/" [ ("page", page) ]
 
 decoder =
   Decode.object4 Character
@@ -114,5 +120,6 @@ decoder =
 
 
 results =
-  Decode.object1 identity
+  Decode.object2 Model
     ("results" := Decode.list decoder)
+    ("next" := Decode.string)

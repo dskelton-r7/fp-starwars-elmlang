@@ -5,7 +5,7 @@ import Task
 
 app =
   StartApp.start
-    { init = init "1"
+    { init = init
     , update = update
     , view = view
     , inputs = []
