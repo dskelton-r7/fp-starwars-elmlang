@@ -38,6 +38,7 @@ newCharacter name height mass gender =
   }
 
 
+init : (Model, Effects Action)
 init =
   ( Model [] Nothing,
     fetchCharacters Nothing
