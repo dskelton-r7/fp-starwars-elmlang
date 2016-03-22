@@ -20,15 +20,14 @@ type alias Character =
     gender: String
   }
 
-
 type alias Characters = List Character
+
 type alias Next = String
 
 type alias Model =
   { characters: Characters,
     next: Maybe Next
   }
-
 
 newCharacter : String -> String -> String -> String -> Character
 newCharacter name height mass gender =
@@ -44,7 +43,9 @@ init =
     fetchCharacters Nothing
     )
 
+
 -- UPDATE
+
 
 type Action
   = NoOp
@@ -52,6 +53,7 @@ type Action
   | ShowCharacters (Maybe Model)
 
 
+update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     NoOp ->
@@ -70,8 +72,11 @@ update action model =
         Nothing ->
           (model, Effects.none)
 
+
 -- VIEW
 
+
+view : Signal.Address Action -> Model -> Html
 view address model =
   div [ ]
     [ h2 [ ] [text "Star Wars App - Elm lang"]
@@ -82,6 +87,7 @@ view address model =
     ]
 
 
+characterView: Character -> Html
 characterView character =
     li [ class "characterView" ]
       [div [] [
@@ -95,12 +101,15 @@ characterView character =
       ]]
 
 
+viewCharacters: Characters -> Html
 viewCharacters characters =
   ul [] (List.map characterView characters)
 
 
 -- EFFECTS
 
+
+fetchCharacters : Maybe String -> Effects Action
 fetchCharacters requestURL =
   Http.get results (Maybe.withDefault baseUrl requestURL)
     |> Task.toMaybe
@@ -108,7 +117,7 @@ fetchCharacters requestURL =
     |> Effects.task
 
 
-
+decoder: Decoder Character
 decoder =
   Decode.object4 Character
     ("name" := Decode.string)
@@ -117,6 +126,7 @@ decoder =
     ("gender" := Decode.string)
 
 
+results: Decoder Model
 results =
   Decode.object2 Model
     ("results" := Decode.list decoder)
