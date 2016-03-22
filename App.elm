@@ -2,7 +2,7 @@ module App where
 
 import Effects exposing (Effects, Never)
 import Html exposing (..)
-import Html.Attributes exposing (style, class)
+import Html.Attributes exposing (style, class, classList)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder, (:=))
@@ -26,7 +26,7 @@ type alias Next = String
 
 type alias Model =
   { characters: Characters,
-    next: Next
+    next: Maybe Next
   }
 
 
@@ -40,7 +40,7 @@ newCharacter name height mass gender =
 
 
 init =
-  ( Model [] baseUrl,
+  ( Model [] Nothing,
     fetchCharacters Nothing
     )
 
@@ -52,23 +52,20 @@ type Action
   | ShowCharacters (Maybe Model)
 
 
--- TODO:
--- Keep track of current page in the model.
--- Update request to use the next page
-
-
 update action model =
   case action of
     NoOp ->
       (model, Effects.none)
 
     LoadMore ->
-      (model, fetchCharacters (Just model.next))
+      case model.next of
+        Just n -> (model, fetchCharacters model.next)
+        Nothing -> (model, Effects.none)
 
     ShowCharacters modelDef ->
       case modelDef of
         Just m ->
-          ( Model (List.append model.characters m.characters) m.next
+          ( Model ((++) model.characters m.characters) m.next
           , Effects.none)
         Nothing ->
           (model, Effects.none)
@@ -79,8 +76,9 @@ view address model =
   div [ ]
     [ h2 [ ] [text "Star Wars App - Elm lang"]
     , viewCharacters model.characters
-    , button [ class "load-more", onClick address LoadMore]
-      [ text "Load More Characters" ]
+    , button [classList [("hidden", (model.next == Nothing))],
+        onClick address LoadMore]
+        [ text "Load More Characters" ]
     ]
 
 
@@ -122,4 +120,4 @@ decoder =
 results =
   Decode.object2 Model
     ("results" := Decode.list decoder)
-    ("next" := Decode.string)
+    (Decode.maybe ("next" := Decode.string))
