@@ -1,9 +1,10 @@
 module App where
 
 import Effects exposing (Effects, Never)
+import String exposing (contains, isEmpty, toLower)
 import Html exposing (..)
-import Utils exposing (linkCss)
-import Html.Attributes exposing (style, class, classList)
+import Utils exposing (linkCss, onInput)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder, (:=))
@@ -22,13 +23,16 @@ type alias Character =
   }
 
 type alias Characters = List Character
-
 type alias Next = String
+type alias Data = { characters: Characters, next: Maybe Next}
+
 
 type alias Model =
   { characters: Characters,
-    next: Maybe Next
+    next: Maybe Next,
+    term: String
   }
+
 
 newCharacter : String -> String -> String -> String -> Character
 newCharacter name height mass gender =
@@ -40,11 +44,10 @@ newCharacter name height mass gender =
 
 
 init : (Model, Effects Action)
-init =
-  ( Model [] Nothing,
-    fetchCharacters Nothing
-    )
-
+init = (
+  Model [] Nothing "",
+  fetchCharacters Nothing
+  )
 
 -- UPDATE
 
@@ -52,7 +55,8 @@ init =
 type Action
   = NoOp
   | LoadMore
-  | ShowCharacters (Maybe Model)
+  | ShowCharacters (Maybe Data)
+  | Search (String)
 
 
 update : Action -> Model -> (Model, Effects Action)
@@ -69,10 +73,13 @@ update action model =
     ShowCharacters modelDef ->
       case modelDef of
         Just m ->
-          ( Model ((++) model.characters m.characters) m.next
+          ( Model ((++) model.characters m.characters) m.next model.term
           , Effects.none)
         Nothing ->
           (model, Effects.none)
+
+    Search t ->
+      ({model | term = t}, Effects.none)
 
 
 -- VIEW
@@ -84,7 +91,16 @@ view address model =
     [
     linkCss "style.css",
     h2 [ ] [text "Star Wars App - Elm lang"]
-    , viewCharacters model.characters
+    , input
+        [ type' "text",
+          placeholder "Search Characters...",
+          value model.term,
+          name "characters",
+          autofocus True,
+          onInput address Search
+        ]
+        [ ]
+    , viewCharacters model.term model.characters
     , button [classList [("hidden", (model.next == Nothing))],
         onClick address LoadMore]
         [ text "Load More Characters" ]
@@ -105,9 +121,14 @@ characterView character =
       ]]
 
 
-viewCharacters: Characters -> Html
-viewCharacters characters =
-  ul [ class "characters" ] (List.map characterView characters)
+viewCharacters: String -> Characters -> Html
+viewCharacters term characters =
+  let
+    activeCharacters =
+      List.map characterView
+        (List.filter (\c -> contains (toLower term) (toLower c.name)) characters)
+  in
+    ul [ class "characters" ] activeCharacters
 
 
 -- EFFECTS
@@ -130,8 +151,8 @@ decoder =
     ("gender" := Decode.string)
 
 
-results: Decoder Model
+results: Decoder Data
 results =
-  Decode.object2 Model
+  Decode.object2 Data
     ("results" := Decode.list decoder)
     (Decode.maybe ("next" := Decode.string))
