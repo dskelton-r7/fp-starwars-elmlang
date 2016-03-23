@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder, (:=))
-import Task
+import Task exposing (Task, andThen)
 import Debug
 
 -- MODEL
@@ -156,10 +156,16 @@ viewCharacters term characters =
 
 -- EFFECTS
 
+fetchFilms x =
+  let
+    b = Debug.log "fetchFilms" x
+  in
+    Http.get results (Maybe.withDefault baseUrl x.next)
 
+    
 fetchCharacters : Maybe String -> Effects Action
 fetchCharacters requestURL =
-  Http.get results (Maybe.withDefault baseUrl requestURL)
+  Http.get results (Maybe.withDefault baseUrl requestURL) `andThen` fetchFilms
     |> Task.toMaybe
     |> Task.map ShowCharacters
     |> Effects.task
