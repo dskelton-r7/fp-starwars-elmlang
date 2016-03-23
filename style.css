@@ -40,6 +40,11 @@ h2{
   margin:20px 0px;
 }
 
+.highlight {
+  background: #2529d8;
+  color:white;
+}
+
 .cname{
   color: black;
   text-decoration: underline;

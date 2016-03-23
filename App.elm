@@ -1,7 +1,7 @@
 module App where
 
 import Effects exposing (Effects, Never)
-import String exposing (startsWith, contains, isEmpty, toLower)
+import String exposing (startsWith, contains, isEmpty, toLower, concat)
 import Html exposing (..)
 import Utils exposing (linkCss, onInput)
 import Html.Attributes exposing (..)
@@ -110,11 +110,31 @@ view address model =
     ]
 
 
-characterView: Character -> Html
-characterView character =
+makeHighlight: String -> String -> Html
+makeHighlight term name =
+  let
+    parts = String.split term name
+    front = Maybe.withDefault "" (List.head parts)
+    back = String.slice
+      ((String.length front) + (String.length term)) (String.length name) name
+  in
+    if isEmpty term || not (contains term name)
+      then span [] [text name]
+    else
+      span [] [
+        span [class "front"] [text (" " ++ front)],
+        span [class "highlight"] [text term],
+        span [class "back"] [text back]
+      ]
+
+
+characterView: String -> Character -> Html
+characterView term character =
     li [ class "characterView" ]
       [div [] [
-          li [ class "cname"] [text character.name]
+          li [ class "cname"] [
+            makeHighlight term character.name
+          ]
         , ul [] [
             li [] [text ("Name: " ++ character.name)]
           , li [] [text ("Mass (kg): " ++ character.mass)]
@@ -128,7 +148,7 @@ viewCharacters: String -> Characters -> Html
 viewCharacters term characters =
   let
     activeCharacters =
-      List.map characterView
+      List.map (characterView term)
         (List.filter (\c -> contains (toLower term) (toLower c.name)) characters)
   in
     ul [ class "characters" ] activeCharacters
