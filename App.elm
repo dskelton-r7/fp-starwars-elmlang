@@ -149,9 +149,17 @@ asfilm film =
 
 characterView: String -> Character -> Html
 characterView term character =
+  let
+    formatUrl =
+      character.name
+        |> String.words
+        |> String.join "-"
+        |> String.toLower
+  in
     li [ class "characterView" ]
       [div [] [
-          li [ class "cname"] [
+          img [class "pic", src ("http://localhost:3000/character/" ++ formatUrl)] []
+        , li [ class "cname"] [
             makeHighlight term character.name
           ]
         , ul [] [
