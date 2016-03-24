@@ -13,13 +13,19 @@ import Debug
 
 -- MODEL
 
-baseUrl = "http://swapi.co/api/people/"
+baseUrl = "http://localhost:3000/people"
+
+type alias Film =
+  { title: String,
+    producer: String
+  }
 
 type alias Character =
   { name: String,
     height: String,
     mass: String,
-    gender: String
+    gender: String,
+    films: List Film
   }
 
 type alias Characters = List Character
@@ -30,22 +36,24 @@ type alias Data = { characters: Characters, next: Maybe Next}
 type alias Model =
   { characters: Characters,
     next: Maybe Next,
-    term: String
+    term: String,
+    fetching: Bool
   }
 
 
-newCharacter : String -> String -> String -> String -> Character
-newCharacter name height mass gender =
+newCharacter : String -> String -> String -> String -> List Film -> Character
+newCharacter name height mass gender films =
   { name = name ,
     height = height,
     mass = mass,
-    gender = gender
+    gender = gender,
+    films = films
   }
 
 
 init : (Model, Effects Action)
 init = (
-  Model [] Nothing "",
+  Model [] Nothing "" True,
   fetchCharacters Nothing
   )
 
@@ -67,13 +75,13 @@ update action model =
 
     LoadMore ->
       case model.next of
-        Just n -> (model, fetchCharacters model.next)
+        Just n -> ({model | fetching = True}, fetchCharacters model.next)
         Nothing -> (model, Effects.none)
 
     ShowCharacters modelDef ->
       case modelDef of
         Just m ->
-          ( Model ((++) model.characters m.characters) m.next model.term
+          ( Model ((++) model.characters m.characters) m.next model.term False
           , Effects.none)
         Nothing ->
           (model, Effects.none)
@@ -83,6 +91,12 @@ update action model =
 
 
 -- VIEW
+
+loader: Bool -> Html
+loader fetching =
+  case fetching of
+    True -> div [class "loader"] []
+    False -> span [] []
 
 
 view : Signal.Address Action -> Model -> Html
@@ -103,8 +117,9 @@ view address model =
           ]
           [ ]
     ]
+    , loader model.fetching
     , viewCharacters model.term model.characters
-    , button [classList [("hidden", (model.next == Nothing))],
+    , button [classList [("hidden", (model.next == Nothing || model.fetching == True))],
         onClick address LoadMore]
         [ text "Load More Characters" ]
     ]
@@ -128,6 +143,10 @@ makeHighlight term name =
       ]
 
 
+asfilm film =
+  li [] [text film.title]
+
+
 characterView: String -> Character -> Html
 characterView term character =
     li [ class "characterView" ]
@@ -141,6 +160,7 @@ characterView term character =
           , li [] [text ("Height (cm): " ++ character.height)]
           , li [] [text ("Gender: " ++ character.gender)]
           ]
+          , ul [class "starred"] (List.map asfilm character.films)
       ]]
 
 
@@ -156,28 +176,29 @@ viewCharacters term characters =
 
 -- EFFECTS
 
-fetchFilms x =
-  let
-    b = Debug.log "fetchFilms" x
-  in
-    Http.get results (Maybe.withDefault baseUrl x.next)
-
-    
 fetchCharacters : Maybe String -> Effects Action
 fetchCharacters requestURL =
-  Http.get results (Maybe.withDefault baseUrl requestURL) `andThen` fetchFilms
+  Http.get results (Maybe.withDefault baseUrl requestURL)
     |> Task.toMaybe
     |> Task.map ShowCharacters
     |> Effects.task
 
 
+filmDecoder: Decoder Film
+filmDecoder =
+  Decode.object2 Film
+    ("title" := Decode.string)
+    ("producer" := Decode.string)
+
+
 decoder: Decoder Character
 decoder =
-  Decode.object4 Character
+  Decode.object5 Character
     ("name" := Decode.string)
     ("height" := Decode.string)
     ("mass" := Decode.string)
     ("gender" := Decode.string)
+    ("films" := Decode.list filmDecoder)
 
 
 results: Decoder Data

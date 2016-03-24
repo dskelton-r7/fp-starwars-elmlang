@@ -72,6 +72,15 @@ h2{
   font-style: italic;
 }
 
+.starred{
+  padding:20px;
+}
+
+.starred li{
+  list-style-type: circle;
+  font-size: 16px;
+}
+
 button{
   outline: none;
   border: none;
@@ -89,4 +98,14 @@ button:hover{
   background: #2529d8;
   color: white;
   cursor: pointer;
+}
+
+.loader {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
 }
