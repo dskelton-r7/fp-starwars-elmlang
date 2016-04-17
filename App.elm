@@ -15,30 +15,31 @@ import Debug
 
 baseUrl = "http://localhost:3000/people"
 
-type alias Film =
-  { title: String,
-    producer: String
-  }
+type alias Film = { title: String
+                  , producer: String
+                  }
 
-type alias Character =
-  { name: String,
-    height: String,
-    mass: String,
-    gender: String,
-    films: List Film
-  }
+type alias Character = { name: String
+                       , height: String
+                       , mass: String
+                       , gender: String
+                       , films: List Film
+                       }
+
 
 type alias Characters = List Character
 type alias Next = String
-type alias Data = { characters: Characters, next: Maybe Next}
+
+type alias Data = { characters: Characters
+                  , next: Maybe Next
+                  }
 
 
-type alias Model =
-  { characters: Characters,
-    next: Maybe Next,
-    term: String,
-    fetching: Bool
-  }
+type alias Model = { characters: Characters
+                   , next: Maybe Next
+                   , term: String
+                   , fetching: Bool
+                   }
 
 
 newCharacter : String -> String -> String -> String -> List Film -> Character
@@ -172,14 +173,42 @@ characterView term character =
       ]]
 
 
+plural s c =
+  if c == 1 then "1 " ++ s
+  else toString c ++ " " ++ s ++ "s"
+
+
+toSpan x = span [] [text x]
+
 viewCharacters: String -> Characters -> Html
 viewCharacters term characters =
   let
     activeCharacters =
       List.map (characterView term)
         (List.filter (\c -> contains (toLower term) (toLower c.name)) characters)
+
+    found =
+      activeCharacters
+        |> List.length
+        |> plural "character"
+        |> String.append "We found "
+
+    cond = String.length term > 0
+
   in
-    ul [ class "characters" ] activeCharacters
+    case cond of
+      True ->
+        let
+          st = found ++ " Matching "
+        in
+          div [] [
+            div [class "num"] [
+                toSpan st,
+                span [class "highlight"] [text ("`" ++ term ++ "`")]
+            ],
+            ul [class "characters"] activeCharacters
+          ]
+      False -> ul [class "characters"] activeCharacters
 
 
 -- EFFECTS
